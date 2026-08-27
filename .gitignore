@@ -57,3 +57,13 @@ tests/visual/**/*-darwin.png
 
 # snap packaging: CI drops the release .deb here before building
 packaging/snap/local/
+
+.env.admin
+.env.admin.*
+.env
+
+# server runtime data and private credentials
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+data/

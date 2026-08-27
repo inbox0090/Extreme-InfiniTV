@@ -23,13 +23,13 @@ const primaryItems = [
     <a
       href="/"
       class="cinema-top-nav__brand"
-      aria-label="Extreme InfiniTV - Home"
+      aria-label="AitvarasTV - Home"
       data-i18n-attr="aria-label:sidebar.brandHome">
       <span class="cinema-top-nav__mark" aria-hidden="true">
         <span></span><span></span><span></span>
       </span>
       <span class="cinema-top-nav__wordmark">
-        <strong>Extreme&nbsp;Infini</strong><b>TV</b>
+        <strong>AitvarasTV</strong>
       </span>
     </a>
 
@@ -57,7 +57,34 @@ const primaryItems = [
         <kbd aria-hidden="true">Ctrl K</kbd>
       </a>
 
-      <AccountMenu />
+      <div class="guest-auth-actions" data-guest-auth-actions>
+        <a href="/auth" class="guest-auth-actions__signin">Sign in</a>
+        <a href="/auth?mode=register" class="guest-auth-actions__register">Register</a>
+      </div>
+      <div data-member-account hidden>
+        <AccountMenu />
+      </div>
     </div>
   </div>
 </header>
+
+<script>
+  const guestActions = document.querySelector("[data-guest-auth-actions]")
+  const memberAccount = document.querySelector("[data-member-account]")
+  fetch("/api/auth/me", { credentials: "same-origin", headers: { Accept: "application/json" }, cache: "no-store" })
+    .then((response) => response.ok ? response.json() : null)
+    .then((access) => {
+      const signedIn = access?.authenticated === true && (access.role === "client" || access.role === "admin")
+      if (signedIn) {
+        guestActions?.setAttribute("hidden", "")
+        memberAccount?.removeAttribute("hidden")
+      } else {
+        guestActions?.removeAttribute("hidden")
+        memberAccount?.setAttribute("hidden", "")
+      }
+    })
+    .catch(() => {
+      guestActions?.removeAttribute("hidden")
+      memberAccount?.setAttribute("hidden", "")
+    })
+</script>

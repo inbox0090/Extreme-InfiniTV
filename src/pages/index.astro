@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import HubStrips from "@/components/HubStrips.svelte";
-import WelcomeCard from "@/components/WelcomeCard.astro";
+import CuratedMovieRows from "@/components/CuratedMovieRows.svelte";
 import CinemaPlans from "@/components/CinemaPlans.astro";
 import {
 	IconDeviceTv,
@@ -13,26 +13,9 @@ import {
 ---
 
 <Layout>
-	<script is:inline>
-		try {
-			var raw = localStorage.getItem("xt_playlists") || "";
-			var hasEntries = false;
-			if (raw) {
-				var parsed = JSON.parse(raw);
-				hasEntries = !!(
-					parsed &&
-					Array.isArray(parsed.entries) &&
-					parsed.entries.length
-				);
-			}
-			if (!hasEntries) {
-				document.documentElement.setAttribute("data-first-run", "true");
-			}
-		} catch (e) {}
-	</script>
 
-	<main
-		class="flex-1 w-full mx-auto px-4 py-6 md:px-6 lg:px-8 max-w-480 flex flex-col gap-6">
+		<main
+		class="movie-first-home flex-1 w-full mx-auto px-4 py-6 md:px-6 lg:px-8 max-w-480 flex flex-col gap-6">
 
 		<a
 			id="hub-expiration-banner"
@@ -47,13 +30,6 @@ import {
 				outline-none transition-colors no-underline">
 		</a>
 
-		<section
-			id="welcome"
-			aria-labelledby="welcome-heading"
-			class="welcome-section hidden flex-1 min-h-0 items-center justify-center py-6">
-			<WelcomeCard />
-		</section>
-
 			<!--
 				Dynamic hero shell. The script below only reads the existing cached VOD
 				catalogue and routes into the existing movie detail page; no provider,
@@ -63,24 +39,49 @@ import {
 				<div id="featured-backdrop" class="featured-hero__backdrop" aria-hidden="true">
 					<img id="featured-backdrop-image" alt="" decoding="async" referrerpolicy="no-referrer" />
 				</div>
-				<div class="featured-hero__veil" aria-hidden="true"></div>
+					<video id="featured-trailer" class="featured-hero__trailer" muted loop playsinline preload="metadata" hidden aria-label="Featured movie trailer"></video>
+					<div class="featured-hero__veil" aria-hidden="true"></div>
 				<div class="featured-hero__content">
 					<p class="featured-hero__eyebrow">Featured selection</p>
 					<h1 id="featured-title" class="featured-hero__title"></h1>
 					<div id="featured-meta" class="featured-hero__meta" aria-label="Title information"></div>
 					<p id="featured-description" class="featured-hero__description"></p>
+					<form class="home-quick-search" action="/search" method="get" role="search">
+						<label class="sr-only" for="home-movie-search">Search movies</label>
+						<input id="home-movie-search" name="q" type="search" placeholder="Search movies, series and channels…" autocomplete="off" />
+						<button type="submit">Search</button>
+					</form>
 					<div class="featured-hero__actions">
 						<a id="featured-play" href="/movies" class="btn-primary">
 							<IconPlayerPlay aria-hidden="true" class="btn-icon" fill="currentColor" />
 							<span>Play</span>
 						</a>
-						<a id="featured-more" href="/movies" class="btn featured-hero__more">
-							<IconInfoCircle aria-hidden="true" class="btn-icon" />
-							<span>More info</span>
-						</a>
+							<a id="featured-more" href="/movies" class="btn featured-hero__more">
+								<IconInfoCircle aria-hidden="true" class="btn-icon" />
+								<span>More info</span>
+							</a>
+							<button id="featured-trailer-toggle" type="button" class="btn featured-hero__trailer-toggle" hidden>
+								<span class="btn-icon" aria-hidden="true">▶</span>
+								<span>Trailer</span>
+							</button>
 					</div>
 				</div>
 			</section>
+
+			<dialog id="movie-preview-modal" class="movie-preview-modal" aria-labelledby="movie-preview-title">
+				<form method="dialog" class="movie-preview-modal__close-wrap"><button class="movie-preview-modal__close" aria-label="Close preview">×</button></form>
+				<div class="movie-preview-modal__backdrop"><img id="movie-preview-image" alt="" /></div>
+				<div class="movie-preview-modal__content">
+					<p class="featured-hero__eyebrow">Movie preview</p>
+					<h2 id="movie-preview-title"></h2>
+					<div id="movie-preview-meta" class="featured-hero__meta"></div>
+					<p id="movie-preview-description"></p>
+					<div class="movie-preview-modal__actions">
+						<a id="movie-preview-open" class="btn-primary" href="/movies">Open details</a>
+						<form method="dialog"><button class="btn">Close</button></form>
+					</div>
+				</div>
+			</dialog>
 
 			<nav
 				id="hub-tiles"
@@ -205,8 +206,16 @@ import {
 			</a>
 		</nav>
 
-			<HubStrips client:load />
-			<CinemaPlans />
+					<section class="movie-home-rows" aria-labelledby="movie-home-rows-title">
+						<div class="movie-home-rows__heading">
+							<p>Discover</p>
+							<h2 id="movie-home-rows-title">Movies made for tonight.</h2>
+						</div>
+													<CuratedMovieRows client:load />
+										<HubStrips client:load />
+
+					</section>
+					<CinemaPlans />
 		</main>
 </Layout>
 
@@ -220,20 +229,14 @@ import {
 	.tile-enter {
 		animation: tile-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
 	}
-		html[data-first-run="true"] #hub-tiles,
-		html[data-first-run="true"] #featured-hero {
-			display: none;
-		}
-	html[data-first-run="true"] #welcome {
-		display: flex;
-	}
+
 </style>
 
 <script>
 	import "../scripts/updater-startup.js";
 	import { log } from "@/scripts/lib/log.js";
 	import { t, LOCALE_EVENT } from "@/scripts/lib/i18n.js";
-	import { getEntries, getActiveEntry, loadCreds } from "@/scripts/lib/creds.js";
+	import { getActiveEntry, loadCreds } from "@/scripts/lib/creds.js";
 	import { getCached, hydrate as hydrateCache } from "@/scripts/lib/cache.js";
 	import { getRecents, ensureLoaded as ensurePrefsLoaded } from "@/scripts/lib/preferences.js";
 	import { getProgrammesSync, getNowNextForChannel, loadProgrammes } from "@/scripts/lib/epg-data.js";
@@ -272,24 +275,6 @@ import {
 		document.addEventListener(LOCALE_EVENT, update);
 	}
 
-	async function reconcileFirstRun() {
-		const entries = await getEntries();
-		const hasEntries = entries.length > 0;
-		document.documentElement.toggleAttribute("data-first-run", !hasEntries);
-		return hasEntries;
-	}
-
-	window.addEventListener("load", async () => {
-		const hasEntries = await reconcileFirstRun();
-		if (!hasEntries) {
-			document
-				.querySelector("#welcome a.btn-primary")
-				?.focus({ preventScroll: true });
-		}
-	});
-
-	document.addEventListener("xt:entries-updated", reconcileFirstRun);
-	document.addEventListener("xt:active-changed", reconcileFirstRun);
 
 	// ──────────────────────────────────────────────────────────
 	// Hub dashboard signals
@@ -304,7 +289,15 @@ import {
 		const featuredDescription = document.getElementById("featured-description");
 		const featuredBackdrop = document.getElementById("featured-backdrop-image") as HTMLImageElement | null;
 		const featuredPlay = document.getElementById("featured-play") as HTMLAnchorElement | null;
-		const featuredMore = document.getElementById("featured-more") as HTMLAnchorElement | null;
+			const featuredMore = document.getElementById("featured-more") as HTMLAnchorElement | null;
+			const featuredTrailer = document.getElementById("featured-trailer") as HTMLVideoElement | null;
+			const featuredTrailerToggle = document.getElementById("featured-trailer-toggle") as HTMLButtonElement | null;
+			const moviePreviewModal = document.getElementById("movie-preview-modal") as HTMLDialogElement | null;
+			const moviePreviewImage = document.getElementById("movie-preview-image") as HTMLImageElement | null;
+			const moviePreviewTitle = document.getElementById("movie-preview-title");
+			const moviePreviewMeta = document.getElementById("movie-preview-meta");
+			const moviePreviewDescription = document.getElementById("movie-preview-description");
+			const moviePreviewOpen = document.getElementById("movie-preview-open") as HTMLAnchorElement | null;
 
 	const rotators = [];
 	function stopRotator() {
@@ -358,8 +351,11 @@ import {
 	async function setupTileArt() {
 		try {
 			stopRotator();
-			const active = await getActiveEntry();
-			if (!active) return;
+				const active = await getActiveEntry();
+				if (!active) {
+					setupFeaturedHero([]);
+					return;
+				}
 			await Promise.all([
 				hydrateCache(active._id, "vod").catch(() => {}),
 				hydrateCache(active._id, "series").catch(() => {}),
@@ -389,12 +385,22 @@ import {
 		}
 	}
 
-		function setupFeaturedHero(entries) {
-			if (!featuredHero || !featuredTitle || !featuredMeta || !featuredDescription || !featuredBackdrop || !featuredPlay || !featuredMore) return;
-			if (!entries?.length) {
-				featuredHero.setAttribute("hidden", "");
-				return;
-			}
+					function setupFeaturedHero(entries) {
+				if (!featuredHero || !featuredTitle || !featuredMeta || !featuredDescription || !featuredBackdrop || !featuredPlay || !featuredMore) return;
+				if (!entries?.length) {
+					featuredTitle.textContent = "Your next movie night starts here";
+					featuredMeta.replaceChildren(...["Movies", "Series", "Live TV"].map((item) => {
+						const tag = document.createElement("span");
+						tag.textContent = item;
+						return tag;
+					}));
+					featuredDescription.textContent = "Browse your connected catalogue, discover something new and keep every favourite in one cinematic home.";
+					featuredPlay.href = "/movies";
+					featuredMore.href = "/movies";
+					featuredHero.removeAttribute("hidden");
+					return;
+				}
+
 			// Deterministic daily offset prevents visual flicker while keeping the
 			// featured title fresh. All values come from the existing VOD cache.
 			const day = Math.floor(Date.now() / 86_400_000);
@@ -410,12 +416,46 @@ import {
 				tag.textContent = item;
 				return tag;
 			}));
-			featuredDescription.textContent = entry.plot || entry.description || entry.name || "";
-			featuredBackdrop.src = entry.backdrop || entry.logo;
-			featuredBackdrop.onerror = () => { featuredBackdrop.removeAttribute("src"); };
-			featuredPlay.href = detailHref;
-			featuredMore.href = detailHref;
-			featuredHero.removeAttribute("hidden");
+				featuredDescription.textContent = entry.plot || entry.description || entry.name || "";
+				featuredBackdrop.src = entry.backdrop || entry.logo;
+				featuredBackdrop.onerror = () => { featuredBackdrop.removeAttribute("src"); };
+				featuredPlay.href = detailHref;
+				featuredMore.href = detailHref;
+				featuredMore.onclick = (event) => {
+					event.preventDefault();
+					if (!moviePreviewModal || !moviePreviewTitle || !moviePreviewDescription || !moviePreviewOpen || !moviePreviewMeta) return;
+					moviePreviewTitle.textContent = entry.name || "Movie preview";
+					moviePreviewDescription.textContent = entry.plot || entry.description || entry.name || "";
+					moviePreviewMeta.replaceChildren(...meta.map((item) => { const tag = document.createElement("span"); tag.textContent = item; return tag; }));
+					moviePreviewOpen.href = detailHref;
+					if (moviePreviewImage) { moviePreviewImage.src = entry.backdrop || entry.logo || ""; moviePreviewImage.alt = entry.name || ""; }
+					moviePreviewModal.showModal();
+				};
+
+				const trailerUrl = entry.trailer || entry.trailer_url || entry.preview || entry.preview_url || entry.video_preview || "";
+				if (featuredTrailer && featuredTrailerToggle) {
+					featuredTrailer.pause();
+					featuredTrailer.removeAttribute("src");
+					featuredTrailer.hidden = true;
+					featuredTrailerToggle.hidden = true;
+					if (trailerUrl) {
+						featuredTrailer.src = String(trailerUrl);
+						featuredTrailer.hidden = false;
+						featuredTrailerToggle.hidden = false;
+						featuredTrailerToggle.textContent = "Pause trailer";
+						featuredTrailer.play().catch(() => {});
+						featuredTrailerToggle.onclick = () => {
+							if (featuredTrailer.paused) {
+								featuredTrailer.play().catch(() => {});
+								featuredTrailerToggle.textContent = "Pause trailer";
+							} else {
+								featuredTrailer.pause();
+								featuredTrailerToggle.textContent = "Play trailer";
+							}
+						};
+					}
+				}
+				featuredHero.removeAttribute("hidden");
 		}
 
 		async function setupLiveSignals(active) {

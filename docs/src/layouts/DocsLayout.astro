@@ -25,12 +25,12 @@ interface Props extends Frontmatter {
 const props = Astro.props
 const { title, description, lede } = props.frontmatter ?? props
 const pageHeadings: Heading[] = (props.headings ?? []).filter((heading) => heading.depth === 2)
-const pageTitle = title === "Extreme InfiniTV docs" ? title : `${title} - Extreme InfiniTV docs`
+const pageTitle = title === "AitvarasTV docs" ? title : `${title} - AitvarasTV docs`
 const titleHtml = title.replace(
   /InfiniTV/g,
   'Infini<span class="font-extrabold tracking-[0.04em] text-accent ml-[0.05em]">TV</span>',
 )
-const metaDescription = description ?? lede ?? "Documentation for Extreme InfiniTV, a cross-platform IPTV player for Xtream Codes and M3U playlists."
+const metaDescription = description ?? lede ?? "Documentation for AitvarasTV, a cross-platform IPTV player for Xtream Codes and M3U playlists."
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "")
 const ogImage = "https://raw.githubusercontent.com/infinitel8p/Extreme-InfiniTV/refs/heads/main/src-tauri/icons/logos/icon-1024.png"
@@ -148,7 +148,7 @@ const editUrl = `https://github.com/infinitel8p/Extreme-InfiniTV/blob/main/docs/
         <slot />
         <footer class="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-6 text-[0.86rem] text-fg-3">
           <span>
-            Extreme InfiniTV
+            AitvarasTV
             <span class="mx-2 inline-block text-line">·</span>
             GPL-3.0-or-later
           </span>
@@ -704,7 +704,7 @@ const editUrl = `https://github.com/infinitel8p/Extreme-InfiniTV/blob/main/docs/
           const style = "color:#d6469c;font-weight:600;letter-spacing:0.02em;"
           // eslint-disable-next-line no-console
           console.log(
-            "%cExtreme InfiniTV%c\nhttps://github.com/infinitel8p/Extreme-InfiniTV",
+            "%cAitvarasTV%c\nhttps://github.com/infinitel8p/Extreme-InfiniTV",
             style,
             "color:inherit;",
           )

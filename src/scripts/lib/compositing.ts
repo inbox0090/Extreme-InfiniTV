@@ -134,7 +134,7 @@ async function showTrialPromptIfNeeded(): Promise<void> {
   else dialog.setAttribute("open", "")
 }
 
-// Mirrors whats-new.ts's afterSplash pattern: wait for the splash overlay to
+// Mirrors the splash transition pattern: wait for the splash overlay to
 // finish (or time out) so the dialog never appears mid-splash.
 function afterSplash(callback: () => void): void {
   const root = document.documentElement

@@ -145,6 +145,7 @@ import { decodedFrameCount, droppedFrameCount } from "@/scripts/lib/player-telem
 import { attachPlayerInsights } from "@/scripts/lib/player-stats.ts"
 import { isAutomaticRetuneReason } from "@/scripts/lib/stream-health.ts"
 import { attachQualityChip } from "@/scripts/lib/quality-badge.ts"
+import { loadViewerAccess, filterChannelsForViewer } from "@/scripts/lib/auth-access.js"
 
 const CHANNELS_TTL_MS = 24 * 60 * 60 * 1000
 // One "page" of the side EPG panel's past window; the "Load earlier" button loads another, up to a 7-day cap.
@@ -407,6 +408,7 @@ const STAR_FILLED =
 let all = []
 /** @type {Array<typeof all[number]>} */
 let filtered = []
+let viewerAccess = { authenticated: false, role: "guest", plan: null, allChannels: false }
 
 const picker = mountCategoryPicker({
   kind: "live",
@@ -1344,10 +1346,11 @@ function fmtAge(ms) {
 }
 
 function paintChannels(data, fromCache, age) {
-  all = data
+  all = filterChannelsForViewer(data, viewerAccess)
+  const accessLabel = viewerAccess.role === "admin" ? " · admin full access" : ""
   listStatus.textContent =
     `${all.length.toLocaleString()} channels` +
-    (fromCache ? ` · cached, ${fmtAge(age)}` : "")
+    (fromCache ? ` · cached, ${fmtAge(age)}` : "") + accessLabel
   picker.rerender()
   applyFilter()
   maybeAutoplayFromUrl()
@@ -1427,6 +1430,7 @@ function maybeAutoplayFromUrl() {
 
 async function loadChannels() {
   log.log("[xt:livetv] loadChannels enter")
+  viewerAccess = await loadViewerAccess()
   if (!listStatus || !viewport) {
     log.warn("[xt:livetv] loadChannels: missing DOM nodes", {
       listStatus: !!listStatus,
@@ -3575,7 +3579,7 @@ function pushDiscordPresence(channel, kind) {
     details: `Watching ${channel.name || `Channel ${channel.id}`}`,
     state: stateLine || (kind === "live" ? "Live TV" : ""),
     largeImage: safeLogo || "logo",
-    largeText: activePlaylistTitle || "Extreme InfiniTV",
+    largeText: activePlaylistTitle || "AitvarasTV",
     smallImage: "live",
     smallText: "Live",
     startTimestamp: Date.now(),

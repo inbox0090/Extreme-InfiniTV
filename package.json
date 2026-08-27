@@ -6,6 +6,7 @@
   "packageManager": "pnpm@10.31.0",
   "scripts": {
     "dev": "astro dev --host",
+    "admin:server": "node server/index.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

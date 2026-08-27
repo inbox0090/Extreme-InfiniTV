@@ -12,9 +12,10 @@ interface Props {
   showVersion?: boolean
 }
 const { pageTitle, showVersion = true } = Astro.props
+const pageKey = Astro.url.pathname
 const documentTitle = pageTitle
-  ? `${pageTitle} | Extreme InfiniTV`
-  : "Extreme InfiniTV"
+  ? `${pageTitle} | AitvarasTV`
+  : "AitvarasTV"
 ---
 
 <!doctype html>
@@ -30,7 +31,7 @@ const documentTitle = pageTitle
     <meta name="theme-color" content="#f4f1ee" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#12131a" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta property="og:title" content="Extreme InfiniTV" />
+    <meta property="og:title" content="AitvarasTV" />
     <meta property="og:image" content="https://raw.githubusercontent.com/infinitel8p/Extreme-InfiniTV/refs/heads/main/src-tauri/icons/logos/icon-1024.png" />
     <script is:inline>
       try {
@@ -242,6 +243,7 @@ const documentTitle = pageTitle
   </head>
 
   <body
+    data-page={pageKey}
     class="antialiased bg-bg text-fg selection:bg-accent-soft
            h-dvh min-h-0 overflow-hidden
            flex flex-col
@@ -310,7 +312,7 @@ const documentTitle = pageTitle
           </svg>
         </div>
         <span class="xt-app-splash__wordmark">
-          <span class="xt-app-splash__wordmark-1">Extreme&nbsp;Infini</span><span class="xt-app-splash__wordmark-2">TV</span>
+          <span class="xt-app-splash__wordmark-1">AitvarasTV</span><span class="xt-app-splash__wordmark-2">TV</span>
         </span>
       </div>
     </div>
@@ -329,7 +331,7 @@ const documentTitle = pageTitle
           id="app-version"
           class="fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] right-[max(1.25rem,env(safe-area-inset-right))] rounded-full bg-bg/75 backdrop-blur-sm px-2 py-0.5 text-2xs text-fg-3 tabular-nums pointer-events-none"
         >
-          Extreme InfiniTV v{pkg.version}
+          AitvarasTV v{pkg.version}
         </div>
       )
     }
@@ -790,12 +792,12 @@ const documentTitle = pageTitle
   import { initI18n } from "@/scripts/lib/i18n.js"
   import { initConnectivity } from "@/scripts/lib/connectivity.js"
   import { initTrayHandler } from "@/scripts/lib/tray-handler"
-  import { initWhatsNew } from "@/scripts/lib/whats-new"
   import { mountCompositingTrialPrompt } from "@/scripts/lib/compositing"
   import { initUiSounds } from "@/scripts/lib/ui-sounds"
   import { initHaptics } from "@/scripts/lib/haptics"
   import { initPlaylistAccent } from "@/scripts/lib/playlist-accent"
   import { logSessionSnapshot } from "@/scripts/lib/diagnostic-snapshot"
+  import "@/scripts/lib/guest-preview.js"
   initI18n()
   initConnectivity()
   initUiSounds()
@@ -883,7 +885,7 @@ const documentTitle = pageTitle
   const SpatialNavigation = window.SpatialNavigation
 
   console.log(
-    "%c∞ Extreme InfiniTV%c\nCurious? Source: https://github.com/infinitel8p/Extreme-InfiniTV",
+    "%c∞ AitvarasTV%c\nCurious? Source: https://github.com/infinitel8p/Extreme-InfiniTV",
     "color: oklch(0.78 0.15 330); font: 600 1rem/1 ui-sans-serif, system-ui;",
     "color: oklch(0.6 0.011 250); font: 0.75rem/1.4 ui-sans-serif, system-ui;"
   )
@@ -915,7 +917,6 @@ const documentTitle = pageTitle
   initFocusGlide()
   initKeyboardHelp()
   initTrayHandler()
-  initWhatsNew()
   mountCompositingTrialPrompt()
 
   // -----------------------------------------------------------------------

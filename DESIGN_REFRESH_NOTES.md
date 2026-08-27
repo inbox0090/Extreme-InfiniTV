@@ -104,3 +104,65 @@ Paskyros meniu lieka dešinėje viršutinės juostos pusėje ir toliau apima vis
 | Paskyros meniu | Išsaugotas dešinėje ir nepakeistas. |
 | `pnpm run build` | Sėkmingai sugeneruoti visi 16 statinių puslapių. |
 | `pnpm test -- --run` | Sėkmingi 80 testų failų ir 1755 testai. |
+
+
+---
+
+## GO3 įkvėpta streaming platformos hierarchija
+
+Pagal viešai matomą `go3.lt` informacinę hierarchiją į pagrindinį puslapį įtraukta originali „Everything worth watching“ turinio atradimo sekcija. Ji naudoja televizijos platformoms būdingą kategorijų ritmą: Live TV, Movies, Series, TV Guide, Downloads ir My List. Tai nėra GO3 kodo, logotipo, vaizdų ar tekstų kopija; komponentas sukurtas savarankiškai su esamu Extreme InfiniTV vizualiniu identitetu.
+
+| Naujas elementas | Esama integracija |
+| --- | --- |
+| `StreamingCollections.astro` | Dekoratyvinis ir navigacinis frontend komponentas, sudarytas iš paprastų nuorodų. |
+| Live TV kortelė | Naudoja esamą `/livetv` maršrutą. |
+| Movies kortelė | Naudoja esamą `/movies` maršrutą. |
+| Series kortelė | Naudoja esamą `/series` maršrutą. |
+| TV Guide kortelė | Naudoja esamą `/epg` maršrutą. |
+| Downloads kortelė | Naudoja esamą `/downloads` maršrutą. |
+| My List kortelė | Naudoja esamą `/favorites` maršrutą. |
+
+Hero, dinaminės `HubStrips`, planų sekcija, paskyros meniu ir esamas turinio cache lieka savo vietose. Naujas modulis neprašo naujų API duomenų, nesaugo naujos būsenos ir nekeičia jokių backend funkcijų.
+
+
+## Home containerių juostų patikra
+
+Home puslapyje dekoratyvūs sekcijų containerių fonai, kraštinės ir šešėliai pašalinti. Hero liko kaip pagrindinė full-width kino scena, o filmų eilės rodomos atviru horizontalios juostos principu. `Live TV` puslapis tikrintas atskirai ir jo funkcinis welcome/container išliko nepakeistas, nes naujos CSS taisyklės apribotos `.movie-first-home` scope.
+
+
+## Full-bleed Home hero
+
+Galutiniame Home išdėstyme hero sekcija išplėsta per visą viewport plotį (`100vw`), panaikintas apvalus išorinis rėmas, border ir šešėlis. Home filmų sekcijos rodomos be dekoratyvinių containerių. Vieninteliai Home containeriai, kurie išlaiko rėmelio ir kortelės principą, yra individualūs Basic, Standard ir Premium planų blokai. Live TV atskiras puslapis ir jo funkciniai containeriai nebuvo modifikuoti.
+
+
+## 16 puslapių naršyklės peržiūra
+
+Home peržiūroje full-bleed hero išsiplėtė per visą viewport plotį, jo išorinis apvalus containeris pašalintas, o planų kortelės išlaikė savo rėmelius. Docs puslapis užsikrovė su nauju atviru išdėstymu ir neparodė dekoratyvinių kortelių rėmų; liko tik jo turinio loading būsena dėl atskiro dokumentacijos įkėlimo mechanizmo.
+
+
+Peržiūros tęsinys: Downloads ir EPG puslapiai užsikrovė su atviru išdėstymu, o jų funkciniai valdikliai išliko prieinami. Ekrano nuotraukos: `localhost_2026-08-27_17-49-45_1105.webp` ir `localhost_2026-08-27_17-49-57_9592.webp`.
+
+
+Favorites ir Live TV peržiūros: Favorites turi atvirą turinio išdėstymą be dekoratyvių kortelių rėmų; Live TV puslapis išlaiko savo funkcinį welcome/container karkasą kaip numatytą išimtį. Ekrano nuotraukos: `localhost_2026-08-27_17-50-18_6903.webp` ir `localhost_2026-08-27_17-50-28_2051.webp`.
+
+
+Login ir Movies peržiūros: Login puslapio forma ir Movies katalogo filtrai rodomi be dekoratyvinių išorinių containerių, išlaikant tik funkcines interaktyvių elementų kraštines. Ekrano nuotraukos: `localhost_2026-08-27_17-50-47_1606.webp` ir `localhost_2026-08-27_17-51-02_4824.webp`.
+
+
+Movie detail ir Playlist Editor peržiūros: abu puslapiai veikia ir turi atvirą išdėstymą be dekoratyvinių išorinių kortelių, išlaikant Play/favorites/watch-later bei Back to Settings funkcinius veiksmus. Ekrano nuotraukos: `localhost_2026-08-27_17-51-25_3129.webp` ir `localhost_2026-08-27_17-51-42_5932.webp`.
+
+
+Recently Added ir Search peržiūros: abu puslapiai užsikrovė su atviru išdėstymu, išlaikant filtrus, paieškos įvestį ir klaviatūros valdymo tekstus. Ekrano nuotraukos: `localhost_2026-08-27_17-52-08_2999.webp` ir `localhost_2026-08-27_17-52-19_2271.webp`.
+
+
+Series ir Series detail peržiūros: katalogo filtrai, paieška, serialo detalių grįžimas ir favorites/watch-later veiksmai išliko prieinami; dekoratyvinių išorinių containerių nebėra. Ekrano nuotraukos: `localhost_2026-08-27_17-52-44_6544.webp` ir `localhost_2026-08-27_17-52-54_1324.webp`.
+
+
+Settings ir Watchlist peržiūros: nustatymų puslapis išlaikė savo navigaciją ir formų valdiklius be dekoratyvinių išorinių rėmų; Watchlist rodo atvirą tuščią būseną. Ekrano nuotraukos: `localhost_2026-08-27_17-53-20_3057.webp` ir `localhost_2026-08-27_17-53-40_7268.webp`.
+
+Visi 16 puslapių patikrinti: dekoratyvinės kortelės ir containerių juostos pašalintos visur, išskyrus prenumeratos planus ir Live TV funkcinį karkasą.
+
+
+## Footer spacing patikra
+
+Home puslapio viršuje ir apačioje patikrinta, kad footer nėra `fixed`, nesidengia su turiniu ir yra stumiamas į apačią tik trumpuose puslapiuose. Ilgesniame Home sraute footer rodomas po planų sekcija su nuosekliu tarpu. Planų kortelės išlaiko rėmelius, o atviros Home sekcijos jų neturi. Nauja naršyklės peržiūra: `localhost_2026-08-27_18-02-03_6430.webp`.

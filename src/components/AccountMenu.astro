@@ -61,10 +61,10 @@ const settingsActive = path === "/settings" || path.startsWith("/settings/")
     class="account-menu__panel">
     <div class="account-menu__head">
       <div>
-        <p class="account-menu__eyebrow">Your library</p>
-        <p class="account-menu__title">Navigation & preferences</p>
+        <p class="account-menu__eyebrow" data-auth-user-label>Your library</p>
+        <p class="account-menu__title" data-auth-plan-label>Navigation & preferences</p>
       </div>
-      <a href="/settings" class="account-menu__settings-shortcut" aria-label="Settings" data-i18n-attr="aria-label:nav.settings">
+      <a href="/settings" data-settings-master-link class="account-menu__settings-shortcut" aria-label="Settings" data-i18n-attr="aria-label:nav.settings">
         <IconSettings aria-hidden="true" stroke={1.8} />
       </a>
     </div>
@@ -112,7 +112,11 @@ const settingsActive = path === "/settings" || path.startsWith("/settings/")
 
     <div class="account-menu__section account-menu__section--preferences">
       <p class="account-menu__section-label">Preferences</p>
-      <a href="/settings" aria-current={settingsActive ? "page" : undefined} data-i18n-attr="aria-label:nav.settings" class:list={["account-menu__link", settingsActive && "is-active"]}>
+      <a href="/account" class="account-menu__link account-menu__link--account">
+        <span class="account-menu__link-icon"><IconUserCircle aria-hidden="true" stroke={1.75} /></span>
+        <span>Account settings</span>
+      </a>
+      <a href="/settings" data-settings-master-link aria-current={settingsActive ? "page" : undefined} data-i18n-attr="aria-label:nav.settings" class:list={["account-menu__link", settingsActive && "is-active"]}>
         <span class="account-menu__link-icon"><IconSettings aria-hidden="true" stroke={settingsActive ? 2 : 1.75} /></span>
         <span data-i18n="nav.settings">Settings</span>
       </a>
@@ -125,6 +129,10 @@ const settingsActive = path === "/settings" || path.startsWith("/settings/")
     </div>
 
     <div class="account-menu__actions">
+      <button type="button" class="account-menu__action account-menu__action--quiet" data-client-signout hidden>
+        <IconUserCircle aria-hidden="true" stroke={2} />
+        <span>Sign out</span>
+      </button>
       <a href="/login" class="account-menu__action account-menu__action--quiet">
         <IconPlus aria-hidden="true" stroke={2} />
         <span data-i18n="playlist.addCta">Add a playlist</span>
@@ -145,6 +153,8 @@ const settingsActive = path === "/settings" || path.startsWith("/settings/")
   } from "@/scripts/lib/downloads.js"
   import { toastSuccess, toastError } from "@/scripts/lib/toast.js"
   import { t } from "@/scripts/lib/i18n.js"
+  import { loadSettingsPolicy } from "@/scripts/lib/settings-policy.js"
+  import { loadViewerAccess } from "@/scripts/lib/auth-access.js"
 
   // Preserved from the former sidebar: warming remains triggered after a
   // playlist switch, independent of where the navigation is rendered.
@@ -219,6 +229,35 @@ const settingsActive = path === "/settings" || path.startsWith("/settings/")
   document.addEventListener(DOWNLOADS_LIST_EVENT, announceDownloadTransitions)
   document.addEventListener(DOWNLOAD_PROGRESS_EVENT, updateDownloads)
   updateDownloads()
+
+  const authUserLabel = document.querySelector("[data-auth-user-label]")
+  const authPlanLabel = document.querySelector("[data-auth-plan-label]")
+  const signout = document.querySelector("[data-client-signout]")
+  loadViewerAccess().then((access) => {
+    if (access.role === "admin") {
+      if (authUserLabel) authUserLabel.textContent = "Admin preview"
+      if (authPlanLabel) authPlanLabel.textContent = "Full channel access"
+      return
+    }
+    if (access.role !== "client") return
+    if (authUserLabel) authUserLabel.textContent = access.user?.displayName || access.user?.email || "Member"
+    if (authPlanLabel) authPlanLabel.textContent = access.plan?.name ? `Plan: ${access.plan.name}` : "Choose a plan"
+    signout?.removeAttribute("hidden")
+  })
+  signout?.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }).catch(() => {})
+    window.location.assign("/auth")
+  })
+
+  // Admin can hide the public Settings entry without changing any existing
+  // navigation routes or client-side settings handlers.
+  loadSettingsPolicy().then((policy) => {
+    if (policy.enabled !== false) return
+    document.querySelectorAll("[data-settings-master-link]").forEach((link) => {
+      link.setAttribute("hidden", "")
+      link.setAttribute("aria-hidden", "true")
+    })
+  })
 
   // Account dropdown interaction: no links or handlers are replaced.
   const trigger = document.getElementById("account-menu-trigger")

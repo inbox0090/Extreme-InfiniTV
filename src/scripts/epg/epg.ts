@@ -38,6 +38,7 @@ import { mountCategoryPicker } from "@/scripts/lib/category-picker.ts"
 import { requestLogoFallback } from "@/scripts/lib/logo-fallback.ts"
 import { mountCachedImage } from "@/scripts/lib/img-cache.ts"
 import { getDensityFactor } from "@/scripts/lib/app-settings.js"
+import { loadViewerAccess, filterChannelsForViewer } from "@/scripts/lib/auth-access.js"
 
 const CAT_FAVORITES = "__favorites__"
 const CAT_RECENTS = "__recents__"
@@ -75,6 +76,7 @@ let activePlaylistTitle = ""
 let channels = []
 /** @type {Array<{id:number,name:string,logo?:string|null,tvgId?:string,category?:string}>} */
 let allChannels = []
+let viewerAccess = { authenticated: false, role: "guest", plan: null, allChannels: false }
 /** @type {Map<string, Array<{start:number,stop:number,title:string,desc:string}>>} channel id (tvg-id, lower-cased) → sorted programmes */
 const programmes = new Map()
 let viewStart = 0
@@ -853,6 +855,7 @@ async function fetchXtreamChannels() {
         id: Number(ch.stream_id),
         name: String(ch.name || ""),
         category,
+        categoryIds: ids,
         logo: ch.stream_icon || null,
         tvgId: String(ch.epg_channel_id || "") || undefined,
         chno: Number(ch.num) || undefined,
@@ -927,6 +930,7 @@ async function init() {
   // never flashes an English string that gets replaced 100ms later.
   await initI18n()
   showLoadingSkeleton(t("epg.loadingSkeleton"))
+  viewerAccess = await loadViewerAccess()
 
   creds = await loadCreds()
   if (!creds.host) {
@@ -967,7 +971,7 @@ async function init() {
     }
   }
 
-  allChannels = cached
+  allChannels = filterChannelsForViewer(cached, viewerAccess)
   picker.rerender()
 
   viewStart = roundHalfHourFloor(Date.now() - 30 * 60 * 1000)
@@ -989,7 +993,7 @@ async function init() {
     return
   }
 
-  channels = pickChannels(cached)
+  channels = pickChannels(allChannels)
   if (!channels.length) {
     const activeCat = picker.getActiveCat()
     if (activeCat === CAT_FAVORITES) {

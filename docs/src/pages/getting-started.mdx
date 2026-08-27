@@ -1,7 +1,7 @@
 ---
 layout: ../layouts/DocsLayout.astro
 title: "Getting started"
-description: "Install Extreme InfiniTV and add your first playlist."
+description: "Install AitvarasTV and add your first playlist."
 lede: "Install on your platform, sign in once, and start watching."
 ---
 
@@ -35,12 +35,12 @@ winget install --id 9NN162Z0WXSR --source msstore
 
 You get the same build as the Store, including automatic updates.
 
-### macOS: "Extreme InfiniTV.app" cannot be opened
+### macOS: "AitvarasTV.app" cannot be opened
 
-The macOS build is not yet notarized by Apple, so Gatekeeper blocks it on first launch with a message like *"Apple could not verify Extreme InfiniTV.app is free of malware"*. After dragging the app from the `.dmg` into `/Applications`, remove the quarantine flag from a Terminal:
+The macOS build is not yet notarized by Apple, so Gatekeeper blocks it on first launch with a message like *"Apple could not verify AitvarasTV.app is free of malware"*. After dragging the app from the `.dmg` into `/Applications`, remove the quarantine flag from a Terminal:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Extreme InfiniTV.app"
+xattr -dr com.apple.quarantine "/Applications/AitvarasTV.app"
 ```
 
 Then open the app normally. You only need to do this once per install.
