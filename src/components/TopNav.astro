@@ -1,0 +1,63 @@
+---
+import { IconSearch } from "@tabler/icons-svelte"
+import AccountMenu from "@/components/AccountMenu.astro"
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/"
+const primaryItems = [
+  { href: "/",          key: "nav.home",      label: "Home",      match: (value: string) => value === "/" },
+  { href: "/movies",    key: "nav.movies",    label: "Movies",    match: (value: string) => value === "/movies" || value.startsWith("/movies/") },
+  { href: "/livetv",    key: "nav.livetv",    label: "Live TV",   match: (value: string) => value === "/livetv" || value.startsWith("/livetv/") },
+  { href: "/series",    key: "nav.series",    label: "Series",    match: (value: string) => value === "/series" || value.startsWith("/series/") },
+  { href: "/favorites", key: "nav.favorites", label: "Favorites", match: (value: string) => value === "/favorites" || value.startsWith("/favorites/") },
+]
+---
+
+<!--
+  Global header after sidebar removal. The same route hrefs and active-state
+  matchers are used here and in AccountMenu; no navigation handler or API is
+  replaced. AccountMenu remains the right-side home for full navigation and
+  user settings.
+-->
+<header id="cinema-top-nav" class="cinema-top-nav">
+  <div class="cinema-top-nav__inner">
+    <a
+      href="/"
+      class="cinema-top-nav__brand"
+      aria-label="Extreme InfiniTV - Home"
+      data-i18n-attr="aria-label:sidebar.brandHome">
+      <span class="cinema-top-nav__mark" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </span>
+      <span class="cinema-top-nav__wordmark">
+        <strong>Extreme&nbsp;Infini</strong><b>TV</b>
+      </span>
+    </a>
+
+    <!-- Primary links are direct anchors, preserving existing app routes. -->
+    <nav class="cinema-top-nav__links" aria-label="Primary navigation">
+      {primaryItems.map(({ href, key, label, match }) => (
+        <a
+          href={href}
+          aria-current={match(path) ? "page" : undefined}
+          data-i18n={key}>
+          {label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="cinema-top-nav__actions">
+      <!-- Existing search route is preserved; no query or search handler is replaced. -->
+      <a
+        href="/search"
+        class="cinema-top-nav__search"
+        aria-label="Search"
+        data-i18n-attr="aria-label:nav.search">
+        <IconSearch aria-hidden="true" stroke={2} />
+        <span data-i18n="nav.search">Search</span>
+        <kbd aria-hidden="true">Ctrl K</kbd>
+      </a>
+
+      <AccountMenu />
+    </div>
+  </div>
+</header>
